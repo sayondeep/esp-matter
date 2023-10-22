@@ -1,14 +1,14 @@
-node('master') {
-    stage('Choose Docker') {
-        script {
-            checkout scm
-            //product_choices = sh (script: 'for product in ${WORKSPACE}/examples/*/main; do echo $product | sed "s="${WORKSPACE}"/products/==" | sed "s=/main==" ; done;', returnStdout:true).trim()
-        }
-    }
-}
+// node('master') {
+//     stage('Choose Docker') {
+//         script {
+//             checkout scm
+//             //product_choices = sh (script: 'for product in ${WORKSPACE}/examples/*/main; do echo $product | sed "s="${WORKSPACE}"/products/==" | sed "s=/main==" ; done;', returnStdout:true).trim()
+//         }
+//     }
+// }
 pipeline {
     agent {
-        any {
+        docker {
             image 'registry.hub.docker.com/espressif/esp-matter:latest'
             // registryUrl 'https://gitlab.espressif.cn:5050'
             // registryCredentialsId 'JENKINS_GITLAB_USER_CREDENTIALS'
