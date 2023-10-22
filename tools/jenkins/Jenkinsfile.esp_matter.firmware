@@ -19,32 +19,32 @@ pipeline {
         timeout(time: 2, unit: 'HOURS')
     }
     parameters {
-        choice(name: 'product', choices: "${product_choices}", description: 'Product choices')
-        choice(name: 'chip', choices:['esp32c3', 'esp32', 'esp32h2', 'esp32c2'], description: 'Chips')
-        string(name: 'esp_matter_branch', defaultValue: 'main', description: 'Branch to be used for esp-matter')
+        // choice(name: 'product', choices: "${product_choices}", description: 'Product choices')
+        // choice(name: 'chip', choices:['esp32c3', 'esp32', 'esp32h2', 'esp32c2'], description: 'Chips')
+        // string(name: 'esp_matter_branch', defaultValue: 'main', description: 'Branch to be used for esp-matter')
     }
     environment {
         REPOS_PATH="/opt/espressif"
         IDF_PATH="${REPOS_PATH}/esp-idf"
         ESP_MATTER_PATH="${REPOS_PATH}/esp-matter"
        // ESP_SECURE_CERT_PATH="${REPOS_PATH}/esp_secure_cert_mgr"
-        PROJECT_VER_SUFFIX="${BUILD_NUMBER}"
+        // PROJECT_VER_SUFFIX="${BUILD_NUMBER}"
     }
     stages {
         stage('Setup') {
             steps {
                 script {
-                        currentBuild.displayName = "${BUILD_TAG}"
+                        // currentBuild.displayName = "${BUILD_TAG}"
                         currentBuild.description = "esp-matter Setup"
                 }
                 println('Running esp-matter Setup...')
                 catchError() {
                     script {
-                        package_name = "esp_matter_firmware_${product}_${chip}"
-                        package_name = package_name + "_${BUILD_NUMBER}"
-                        env.PACKAGE_NAME = package_name
-                        env.PACKAGE_PATH = "${REPOS_PATH}/${PACKAGE_NAME}"
-                        echo "Package name: ${PACKAGE_NAME}"
+                        // package_name = "esp_matter_firmware_${product}_${chip}"
+                        // package_name = package_name + "_${BUILD_NUMBER}"
+                        // env.PACKAGE_NAME = package_name
+                        // env.PACKAGE_PATH = "${REPOS_PATH}/${PACKAGE_NAME}"
+                        // echo "Package name: ${PACKAGE_NAME}"
 
                        // def esp_matter = load "${WORKSPACE}/tools/jenkins/esp_matter.groovy"
                       //  esp_matter.setup_directories_firmware()
@@ -88,23 +88,23 @@ pipeline {
             }
         }
 
-        stage('Cleanup') {
-            steps {
-                echo 'Build Clean up.'
-            }
-            post {
-                always {
-                    cleanWs()
-                }
-                success {
-                    echo 'Success for cleanup'
-                }
-                failure {
-                    echo 'Failure for cleanup'
-                    error('Failure for cleanup. Abort.')
-                }
-            }
-        }
+        // stage('Cleanup') {
+        //     steps {
+        //         echo 'Build Clean up.'
+        //     }
+        //     post {
+        //         always {
+        //             cleanWs()
+        //         }
+        //         success {
+        //             echo 'Success for cleanup'
+        //         }
+        //         failure {
+        //             echo 'Failure for cleanup'
+        //             error('Failure for cleanup. Abort.')
+        //         }
+        //     }
+        // }
     }
     post {
         always {
