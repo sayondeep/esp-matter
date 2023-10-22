@@ -63,16 +63,13 @@ def setup_environment() {
 
 def firmware_build() {
     sh '''
-    //printf "\n\n" >> ${REPOS_PATH}/build_details.txt
-    //echo "firmware_type: ${FIRMWARE_TYPE}" >> ${REPOS_PATH}/build_details.txt
- 
-    cd ${ESP_MATTER_PATH}/examples/${product}
+    cd ${ESP_MATTER_PATH}/examples/light
 
     . ${IDF_PATH}/export.sh
     . ${ESP_MATTER_PATH}/export.sh;
 
     idf.py fullclean
-    idf.py set-target ${chip}
+    idf.py set-target esp32c3
     idf.py build
 
     # Create Merged binary
@@ -81,6 +78,27 @@ def firmware_build() {
     cd ..
     '''
 }
+
+// def firmware_build() {
+//     sh '''
+//     //printf "\n\n" >> ${REPOS_PATH}/build_details.txt
+//     //echo "firmware_type: ${FIRMWARE_TYPE}" >> ${REPOS_PATH}/build_details.txt
+ 
+//     cd ${ESP_MATTER_PATH}/examples/${product}
+
+//     . ${IDF_PATH}/export.sh
+//     . ${ESP_MATTER_PATH}/export.sh;
+
+//     idf.py fullclean
+//     idf.py set-target ${chip}
+//     idf.py build
+
+//     # Create Merged binary
+//     cd build
+//     BINARY_FILES=$(cat flash_args | sed 's/--.*//' | tr '\n' ' ' | sed 's/^ *//;s/ *$//')
+//     cd ..
+//     '''
+// }
 
 // def firmware_build_save() {
 //     sh '''
