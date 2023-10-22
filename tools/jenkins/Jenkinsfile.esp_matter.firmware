@@ -8,7 +8,7 @@ node('master') {
 }
 pipeline {
     agent {
-        docker {
+        any {
             image 'registry.hub.docker.com/espressif/esp-matter:latest'
             // registryUrl 'https://gitlab.espressif.cn:5050'
             // registryCredentialsId 'JENKINS_GITLAB_USER_CREDENTIALS'
