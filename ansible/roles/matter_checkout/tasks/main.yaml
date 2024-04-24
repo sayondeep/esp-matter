@@ -1,0 +1,10 @@
+- name: Checkout esp-matter commit
+  ansible.builtin.git:
+    repo: "{{ matter_repo }}"
+    dest: "{{ esp_matter_path }}"
+    version: "{{ esp_matter_commit }}"
+    update: yes
+    recursive: no
+    force: yes
+    remote: "origin"
+

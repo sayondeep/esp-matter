@@ -1,0 +1,4 @@
+- name: Install Matter
+  ansible.builtin.shell:
+    cmd: "./install.sh | tee matter_install.log"
+    chdir: "{{ esp_matter_path }}"

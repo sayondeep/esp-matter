@@ -1,0 +1,25 @@
+- name: Set up source development environments for esp-matter
+  hosts: localhost
+  connection: local
+  pre_tasks:
+    - name: Print args
+      ansible.builtin.debug:
+        msg:
+          - idf_path: "{{ idf_path }}"
+          - idf_commit: "{{ idf_commit }}"
+          - esp_matter_repo: "{{ matter_repo }}"
+          - esp_matter_commit: "{{ esp_matter_commit }}"
+          - esp_matter_no_install: "{{ esp_matter_no_install }}"
+
+  roles:
+    # esp-matter base dependencies
+    - role: esp_matter.dev_env.matter_pre_req
+      when: no_pre_req == 'false'
+    - role: esp_matter.dev_env.idf_clone
+      when: idf_no_clone == 'false'
+    - role: esp_matter.dev_env.idf_install
+    - role: esp_matter.dev_env.matter_checkout
+      when: esp_matter_commit != '-'
+    - role: esp_matter.dev_env.matter_submodule_update
+    - role: esp_matter.dev_env.matter_install
+      when: esp_matter_no_install == 'false'

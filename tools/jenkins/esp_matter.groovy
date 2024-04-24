@@ -33,15 +33,14 @@ def setup_environment() {
     IDF_COMMIT_ID=`cd ${REPOS_PATH}/esp-idf && git rev-parse --verify HEAD`
     ESP_MATTER_BRANCH=`cd ${REPOS_PATH}/esp-matter && git rev-parse --abbrev-ref HEAD`
     ESP_MATTER_COMMIT_ID=`cd ${REPOS_PATH}/esp-matter && git rev-parse --verify HEAD`
- 
+
     echo "esp-idf: ${IDF_BRANCH}: ${IDF_COMMIT_ID}" >> ${REPOS_PATH}/build_details.txt
-    echo "esp-matter: ${ESP_MATTER_BRANCH}: ${ESP_MATTER_COMMIT_ID}" >> ${REPOS_PATH}/build_details.txt    
+    echo "esp-matter: ${ESP_MATTER_BRANCH}: ${ESP_MATTER_COMMIT_ID}" >> ${REPOS_PATH}/build_details.txt
     printf "\n\n" >> ${REPOS_PATH}/build_details.txt
 
     echo "product: ${product}" >> ${REPOS_PATH}/build_details.txt
     echo "chip: ${chip}" >> ${REPOS_PATH}/build_details.txt
     echo "flash_size: 4MB" >> ${REPOS_PATH}/build_details.txt
-    
     printf "\n\n" >> ${REPOS_PATH}/build_details.txt
     '''
 }
@@ -50,7 +49,7 @@ def firmware_build() {
     sh '''
     printf "\n\n" >> ${REPOS_PATH}/build_details.txt
     echo "firmware_type: ${FIRMWARE_TYPE}" >> ${REPOS_PATH}/build_details.txt
- 
+
     cd ${IDF_PATH}
     . ./export.sh
 

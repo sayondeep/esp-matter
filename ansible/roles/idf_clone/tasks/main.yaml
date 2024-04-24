@@ -1,0 +1,12 @@
+- name: Create esp-idf directory if not exists
+  ansible.builtin.file:
+    path: "{{ idf_path }}"
+    state: directory
+
+- name: Clone esp-idf repository
+  ansible.builtin.git:
+    repo: "https://github.com/espressif/esp-idf.git"
+    dest: "{{ idf_path }}"
+    clone: yes
+    force: yes
+    remote: "origin"

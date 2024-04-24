@@ -1,0 +1,16 @@
+- name: Update connectedhomeip submodule
+  ansible.builtin.shell:
+    cmd: "git submodule update --init"
+    chdir: "{{ esp_matter_path }}"
+
+- name: clone esp-32 specific submodule for linux
+  ansible.builtin.shell:
+    cmd: "./scripts/checkout_submodules.py --platform esp32 linux --shallow"
+    chdir: "{{ esp_matter_path }}/connectedhomeip/connectedhomeip"
+  when: ansible_system == 'Linux'
+
+- name: clone esp-32 specific submodule for Darwin
+  ansible.builtin.shell:
+    cmd: "./scripts/checkout_submodules.py --platform esp32 darwin --shallow"
+    chdir: "{{ esp_matter_path }}/connectedhomeip/connectedhomeip"
+  when: ansible_system == 'Darwin'

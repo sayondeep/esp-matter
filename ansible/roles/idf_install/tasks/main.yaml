@@ -1,0 +1,14 @@
+- name: Checkout esp-idf commit
+  ansible.builtin.git:
+    repo: "https://github.com/espressif/esp-idf.git"
+    dest: "{{ idf_path }}"
+    version: "{{ idf_commit }}"
+    update: yes
+    force: yes
+    recursive: yes
+    remote: "origin"
+
+- name: Install esp-idf
+  ansible.builtin.shell:
+    cmd: "./install.sh"
+    chdir: "{{ idf_path }}"

@@ -1,0 +1,14 @@
+# Required
+namespace: esp_matter
+name: dev_env
+version: 0.1.0
+readme: README.md
+authors:
+  - Espressif Systems
+
+# Optional
+description: Set up development environment for esp-matter
+tags:
+  - esp-matter
+dependencies: {}
+build_ignore: []
