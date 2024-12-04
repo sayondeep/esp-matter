@@ -18,5 +18,7 @@ dependencies:
     version: "*"
     rules: # will add "optional_component" only when all if clauses are True
       - if: "target in [esp32p4]"
+  espressif/esp_diag_data_store:
+    override_path: ${RMAKER_PATH}/components/esp-insights/components/esp_diag_data_store
 
 

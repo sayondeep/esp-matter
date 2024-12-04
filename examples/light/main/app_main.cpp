@@ -24,6 +24,9 @@
 #include <app/server/CommissioningWindowManager.h>
 #include <app/server/Server.h>
 
+#include "my_custom_cluster.h"
+
+
 static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
 
@@ -201,6 +204,10 @@ extern "C" void app_main()
     };
     set_openthread_platform_config(&config);
 #endif
+
+        /* CustomAPI start */
+    err = esp_matter::customapi::init();
+    err = esp_matter::customapi::start();
 
     /* Matter start */
     err = esp_matter::start(app_event_cb);
