@@ -16,7 +16,7 @@ print_help() {
     echo "  --idf_commit            Specify the esp-idf commit to use"
     echo "  --matter-no-install     Disable installation of the esp-matter."
     echo "  --esp_matter_commit     Specify the esp-matter commit to use"
-    echo "  --submodule_commit      Specify the esp-matter commit to use"
+    echo "  --submodule_commit      Specify the connectedhomeip commit to use"
     echo "  --matter_repo           Specify the esp-matter repo url to use"
     echo "  --no-pre-req            Disable installation of esp-matter pre-requisite"
     echo ""
@@ -127,7 +127,7 @@ fi
 
 # Check module option
 if [ "$option_idf_commit" == "-" ]; then
-    option_idf_commit="a322e6b"
+    option_idf_commit="v5.2.3"
 fi
 echo "Selected IDF commit is: ${option_idf_commit}"
 
@@ -159,33 +159,36 @@ ansible_args+=("--extra-vars" "idf_no_clone=$option_idf_no_clone")
 # fi
 
 # Install sudo
-# if ! (command -v sudo >/dev/null 2>&1); then
-#     apt-get -y update
-#     apt-get -y install sudo
-# fi
+if ! (command -v sudo >/dev/null 2>&1); then
+    apt-get -y update
+    apt-get -y install sudo
+fi
 
-# # Install git
-# if ! (command -v git >/dev/null 2>&1); then
-#     sudo apt-get -y update
-#     sudo apt-get -y install git
-# fi
+# Install git
+if ! (command -v git >/dev/null 2>&1); then
+    sudo apt-get -y update
+    sudo apt-get -y install git
+fi
 
-# # Install pip for ansible
-# if ! (python3 -m pip --version >/dev/null 2>&1); then
-#     sudo apt-get -y update
-#     sudo apt-get -y install python3-pip python3-venv
-# fi
+# Install pip for ansible
+if ! (python3 -m pip --version >/dev/null 2>&1); then
+    sudo apt-get -y update
+    sudo apt-get -y install python3-pip python3-venv
+fi
 
-# # Install pipx for ansible
-# if ! (python3 -m pipx --version >/dev/null 2>&1); then
-#     sudo apt-get -y update
-#     python3 -m pip install --user pipx
-# fi
+# Install pipx for ansible
+if ! (python3 -m pipx --version >/dev/null 2>&1); then
+    sudo apt-get -y update
+    # python3 -m pip install --user pipx
+    sudo apt-get install pipx
+    pipx install pipx
+fi
 
-# # Install ansible
+# Install ansible
 # python3 -m pipx ensurepath
-# export PATH="${PIPX_BIN_DIR:=$HOME/.local/bin}:$PATH"
-# pipx install --include-deps --force "ansible==6.*"
+pipx ensurepath
+export PATH="${PIPX_BIN_DIR:=$HOME/.local/bin}:$PATH"
+pipx install --include-deps --force "ansible==6.*"
 
 # Install ansible collections
 echo -e "\e[36m"ansible-galaxy collection install -f -r "$ESP_MATTER_PATH/ansible-galaxy-requirements.yaml" "\e[m"
