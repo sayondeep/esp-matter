@@ -198,6 +198,10 @@ ansible-galaxy collection install -f -r "$ESP_MATTER_PATH/ansible-galaxy-require
 echo -e "\e[36m"ansible-playbook "$target_playbook" "${ansible_args[@]}" "\e[m"
 if ansible-playbook "$target_playbook" "${ansible_args[@]}"; then
     echo -e "\e[32mCompleted.\e[0m"
+    echo -e "\033[1;32m✔ SUCCESS:\033[0m ESP-Matter installation completed successfully!"
+    echo -e "\033[1;32m Export ESP-IDF and ESP-Matter \033[0m"
+    echo -e "\033[1;32m RUN: \033[0m source "$option_idf_path"/export.sh"
+    echo -e "\033[1;32m RUN:\033[0m source "$option_esp_matter_path"/export.sh"
     exit 0
 else
     echo -e "\e[31mFailed.\e[0m"
