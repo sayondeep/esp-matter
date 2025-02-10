@@ -1,0 +1,187 @@
+def setup_environment() {
+    sh '''#!/bin/bash
+    cd ${IDF_PATH}
+    source ./export.sh
+    cd ..
+
+    cd ${ESP_MATTER_PATH}
+    source ./export.sh
+
+    cd ${ESP_MATTER_PATH}/connectedhomeip/connectedhomeip
+    echo ${ESP_MATTER_PATH}
+    scripts/examples/gn_build_example.sh examples/ota-provider-app/linux out/debug chip_config_network_layer_ble=false
+
+    IDF_BRANCH=`cd ${IDF_PATH} && git rev-parse --abbrev-ref HEAD`
+    IDF_COMMIT_ID=`cd ${IDF_PATH} && git rev-parse --verify HEAD`
+    ESP_MATTER_BRANCH=`cd ${ESP_MATTER_PATH} && git rev-parse --abbrev-ref HEAD`
+    ESP_MATTER_COMMIT_ID=`cd ${ESP_MATTER_PATH} && git rev-parse --verify HEAD`
+
+    echo "esp-idf: ${IDF_BRANCH}: ${IDF_COMMIT_ID}" >> ${REPOS_PATH}/build_details.txt
+    echo "esp-matter: ${ESP_MATTER_BRANCH}: ${ESP_MATTER_COMMIT_ID}" >> ${REPOS_PATH}/build_details.txt
+    printf "\n\n" >> ${REPOS_PATH}/build_details.txt
+
+    echo "product: ${product}" >> ${REPOS_PATH}/build_details.txt
+    echo "chip: ${chip}" >> ${REPOS_PATH}/build_details.txt
+    echo "flash_size: 4MB" >> ${REPOS_PATH}/build_details.txt
+    printf "\n\n" >> ${REPOS_PATH}/build_details.txt
+    '''
+}
+node {
+    stage('fetch configure options') {
+        script {
+            checkout scm
+            product_choices = sh (script: 'for product in ${WORKSPACE}/examples/*/main; do echo $product | sed "s="${WORKSPACE}"/examples/==" | sed "s=/main==" ; done;', returnStdout:true).trim()
+            echo "Product Choices: ${product_choices}"
+        }
+    }
+}
+pipeline {
+    agent any
+
+    parameters {
+    choice(name: 'product', choices: "${product_choices}", description: 'Product choices')
+    choice(name: 'chip', choices:['esp32c3', 'esp32', 'esp32h2', 'esp32c2','esp32c6'], description: 'Chips')
+    string(name: 'esp_matter_commit', defaultValue: '-', description: 'commit-id to be used for esp-matter')
+    string(name: 'esp_idf_commit', defaultValue: '-', description: 'commit-id to be used for esp-idf')
+    }
+
+    environment {
+    REPOS_PATH="${WORKSPACE}/../out_files"
+    IDF_PATH="${WORKSPACE}/../esp-idf"
+    ESP_MATTER_PATH="${WORKSPACE}"
+    PROJECT_VER_SUFFIX="${BUILD_NUMBER}"
+    }
+    tools {
+        jfrog 'jfrog-cli-latest'
+    }
+    stages {
+
+        stage('Checkout') {
+            steps {
+                // Checkout the code from the repository
+                checkout scm
+            }
+        }
+
+        stage('Setup Environment') {
+            steps {
+                // Run the setup-dev-env.sh script in the project directory
+                script {
+
+                    sh "./setup-dev-env.sh -y -v --idf_commit ${params.esp_idf_commit} --esp_matter_commit ${params.esp_matter_commit}"
+                }
+            }
+        }
+        stage('Setup') {
+            steps {
+                script {
+                        currentBuild.displayName = "${BUILD_TAG}"
+                        currentBuild.description = "esp-matter Setup"
+                }
+                println('Running esp-matter Setup...')
+                catchError() {
+                    script {
+                        def IDF_COMMIT_ID = sh(script: "cd ${IDF_PATH} && git rev-parse --short --verify HEAD", returnStdout: true).trim()
+                        def ESP_MATTER_COMMIT_ID = sh(script: "cd ${ESP_MATTER_PATH} && git rev-parse --short --verify HEAD", returnStdout: true).trim()
+
+                        package_name = "${product}_${chip}_${IDF_COMMIT_ID}_${ESP_MATTER_COMMIT_ID}"
+                        // package_name = package_name + "_${BUILD_NUMBER}"
+                        env.PACKAGE_NAME = package_name
+                        env.PACKAGE_PATH = "${REPOS_PATH}/${PACKAGE_NAME}"
+                        echo "Package name: ${PACKAGE_NAME}"
+
+                        sh "mkdir -p ${REPOS_PATH}"
+
+                        def esp_matter = load "${WORKSPACE}/tools/jenkins/esp_matter.groovy"
+                        esp_matter.setup_directories()
+                        setup_environment()
+                    }
+                }
+            }
+            post {
+                success {
+                    echo 'Success for setup'
+                }
+                failure {
+                    echo 'Failure for setup'
+                    error('Failure for setup. Abort.')
+                }
+            }
+        }
+        //Here onwards same stages as esp_matter.firmware is used
+        stage("Build product") {
+            steps {
+                println('Build ${product} product binary for ${chip}.')
+                catchError() {
+                    script {
+                        def esp_matter = load "${WORKSPACE}/tools/jenkins/esp_matter.groovy"
+
+                        env.FIRMWARE_TYPE = "Evaluation"
+                        esp_matter.firmware_build()
+                        esp_matter.firmware_build_save()
+
+                        env.FIRMWARE_TYPE = "OTA"
+                        esp_matter.firmware_build()
+                        esp_matter.firmware_build_save()
+
+                    }
+                }
+            }
+            post {
+                success {
+                    echo 'Success for build product'
+                }
+                failure {
+                    echo 'Failure for build product'
+                    error('Failure for build product. Abort.')
+                }
+            }
+        }
+        // Stage "Support Package" skipped
+        stage('Artifacts') {
+            steps {
+                println('Generating artifacts.')
+                catchError() {
+                    script {
+                        def esp_matter = load "${WORKSPACE}/tools/jenkins/esp_matter.groovy"
+                        esp_matter.artifacts_save()
+                    }
+                }
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: 'artifacts/*.tar.gz, artifacts/*.txt', fingerprint: true
+                    echo 'Success for artifacts'
+                }
+                failure {
+                    echo 'Failure for artifacts'
+                    error('Failure for artifacts. Abort.')
+                }
+            }
+        }
+        stage('Upload')
+        {
+            steps{
+
+                println('Uploading artifacts.')
+
+                sh "ls -ltr ${WORKSPACE}/artifacts/"
+
+                jf '-v' //installed version of JFrog cli
+
+                jf 'c show' //configured JF platform instances
+
+                jf 'rt ping' //ping Artifactory
+
+                jf "rt u --flat=true ${WORKSPACE}/artifacts/${PACKAGE_NAME}.tar.gz esp-matter/${product}/${chip}/" //upload
+
+                jf 'rt bp' //publish build-info
+
+                sh "rm -rf ${WORKSPACE}/artifacts/*.tar.gz"
+
+            }
+        }
+
+
+    }
+}

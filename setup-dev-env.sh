@@ -180,7 +180,7 @@ fi
 if ! (python3 -m pipx --version >/dev/null 2>&1); then
     sudo apt-get -y update
     # python3 -m pip install --user pipx
-    sudo apt-get install pipx
+    sudo apt-get -y install pipx
     pipx install pipx
 fi
 
